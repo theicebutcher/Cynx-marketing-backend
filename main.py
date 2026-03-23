@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from routers import email, images
+from routers import email, images, ai
 
 app = FastAPI(title="Cynx Engage API", version="1.0.0")
 
@@ -19,6 +19,7 @@ app.add_middleware(
         "http://localhost:3000",
         "http://localhost:5174",
         "https://cynx-engage.vercel.app",
+        "https://cynx-email.vercel.app",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:3000",
     ],
@@ -30,6 +31,7 @@ app.add_middleware(
 
 app.include_router(email.router, prefix="/api/email", tags=["email"])
 app.include_router(images.router, prefix="/api/images", tags=["images"])
+app.include_router(ai.router, prefix="/api/ai", tags=["ai"])
 
 
 @app.get("/")
