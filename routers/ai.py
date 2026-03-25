@@ -100,7 +100,7 @@ async def proxy_gemini(
                 f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}",
                 headers={"Content-Type": "application/json"},
                 json=body,
-                timeout=60.0
+                timeout=100.0
             )
             return res.json()
         except HTTPException:
