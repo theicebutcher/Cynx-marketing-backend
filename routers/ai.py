@@ -15,15 +15,16 @@ async def proxy_anthropic(
 ):
     """Proxy requests to Anthropic API."""
     await validate_token(authorization)
-    
+
     api_key = os.getenv("ANTHROPIC_API_KEY")
     if not api_key:
         raise HTTPException(status_code=500, detail="ANTHROPIC_API_KEY not set on server")
 
     body = await request.json()
     system = body.pop("system", None)
-    
-    async with httpx.AsyncClient() as client:
+
+    # Use a long timeout — full HTML email generation can take 2-3 minutes
+    async with httpx.AsyncClient(timeout=httpx.Timeout(300.0, connect=10.0)) as client:
         try:
             res = await client.post(
                 "https://api.anthropic.com/v1/messages",
@@ -36,13 +37,10 @@ async def proxy_anthropic(
                     **body,
                     **({"system": system} if system else {})
                 },
-                timeout=60.0
             )
             data = res.json()
             if res.status_code != 200:
                 print(f"Anthropic error ({res.status_code}): {data}")
-                # Don't raise here, just return the data with the status code or let the frontend handle it
-                # For now, let's just raise but ensure we don't catch it in the blanket except
                 raise HTTPException(status_code=res.status_code, detail=data.get("error", {}).get("message", "Anthropic Error"))
             return data
         except HTTPException:
